@@ -27,6 +27,13 @@ func PathIsDir(path string) (isDir bool, err error) {
 	return fi.IsDir(), nil
 }
 
+func CreateDirIfNotExists(path string) error {
+	if !PathExists(path) {
+		return os.MkdirAll(path, 0777)
+	}
+	return nil
+}
+
 func FileSha1(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -43,13 +50,19 @@ func FileSha1(path string) (string, error) {
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
 
-func DataSha1(data []byte) (string, error) {
+func Sha1StringOfBytes(data []byte) string {
+	return fmt.Sprintf("%x", Sha1OfBytes(data))
+}
+
+func Sha1OfBytes(data []byte) []byte {
 	h := sha1.New()
-	_, err := h.Write(data)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	h.Write(data)
+	return h.Sum(nil)
+}
+
+// TODO: remove in favor of Sha1OfBytes
+func DataSha1(data []byte) (string, error) {
+	return Sha1StringOfBytes(data), nil
 }
 
 func TimeSinceNowAsString(t time.Time) string {
@@ -65,6 +78,23 @@ func TimeSinceNowAsString(t time.Time) string {
 		return fmt.Sprintf("%dhr %dm", hours, minutes)
 	}
 	return fmt.Sprintf("%dm", minutes)
+}
+
+func CopyFile(dst, src string) error {
+	fsrc, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer fsrc.Close()
+	fdst, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer fdst.Close()
+	if _, err = io.Copy(fdst, fsrc); err != nil {
+		return err
+	}
+	return nil
 }
 
 // the names of files inside the zip file are relatitve to dirToZip e.g.
