@@ -27,11 +27,31 @@ func PathIsDir(path string) (isDir bool, err error) {
 	return fi.IsDir(), nil
 }
 
+func GetFileSize(path string) (int64, error) {
+	if fi, err := os.Lstat(path); err != nil {
+		return 0, err
+	} else {
+		return fi.Size(), nil
+	}
+}
+
+func DirifyFileName(fn string) string {
+	sep := string(os.PathSeparator)
+	res := fn[:2] + sep + fn[2:4] + sep
+	res += fn[4:6] + sep + fn[6:8] + sep + fn[8:10]
+	return res + sep + fn[10:]
+}
+
 func CreateDirIfNotExists(path string) error {
 	if !PathExists(path) {
 		return os.MkdirAll(path, 0777)
 	}
 	return nil
+}
+
+func CreateDirForFile(path string) error {
+	dir := filepath.Dir(path)
+	return CreateDirIfNotExists(dir)
 }
 
 func FileSha1(path string) (string, error) {
@@ -65,8 +85,7 @@ func DataSha1(data []byte) (string, error) {
 	return Sha1StringOfBytes(data), nil
 }
 
-func TimeSinceNowAsString(t time.Time) string {
-	d := time.Now().Sub(t)
+func DurationToString(d time.Duration) string {
 	minutes := int(d.Minutes()) % 60
 	hours := int(d.Hours())
 	days := hours / 24
@@ -78,6 +97,10 @@ func TimeSinceNowAsString(t time.Time) string {
 		return fmt.Sprintf("%dhr %dm", hours, minutes)
 	}
 	return fmt.Sprintf("%dm", minutes)
+}
+
+func TimeSinceNowAsString(t time.Time) string {
+	return DurationToString(time.Now().Sub(t))
 }
 
 func CopyFile(dst, src string) error {
