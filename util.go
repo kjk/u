@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -54,6 +55,13 @@ func CreateDirForFile(path string) error {
 	return CreateDirIfNotExists(dir)
 }
 
+func WriteBytesToFile(d []byte, path string) error {
+	if err := CreateDirIfNotExists(filepath.Dir(path)); err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path, d, 0644)
+}
+
 func FileSha1(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -78,6 +86,28 @@ func Sha1OfBytes(data []byte) []byte {
 	h := sha1.New()
 	h.Write(data)
 	return h.Sum(nil)
+}
+
+func ListFilesInDir(dir string, recursive bool) []string {
+	files := make([]string, 0)
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		isDir, err := PathIsDir(path)
+		if err != nil {
+			return err
+		}
+		if isDir {
+			if recursive || path == dir {
+				return nil
+			}
+			return filepath.SkipDir
+		}
+		files = append(files, path)
+		return nil
+	})
+	return files
 }
 
 // TODO: remove in favor of Sha1OfBytes
