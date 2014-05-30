@@ -7,7 +7,9 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -205,4 +207,16 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 		return nil
 	})
 	return nil
+}
+
+func UserHomeDir() string {
+	usr, _ := user.Current()
+	return usr.HomeDir
+}
+
+func ExpandTildeInPath(s string) string {
+	if strings.HasPrefix(s, "~") {
+		return UserHomeDir() + s[1:]
+	}
+	return s
 }
