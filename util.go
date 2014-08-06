@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -209,14 +210,47 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 	return nil
 }
 
+func IsLinux() bool {
+	return runtime.GOOS == "linux"
+}
+
+func IsMac() bool {
+	return runtime.GOOS == "darwin"
+}
+
+// Note: doesn't work when cross-compiling
 func UserHomeDir() string {
 	usr, _ := user.Current()
 	return usr.HomeDir
 }
 
+// Note: doesn't work when cross-compiling
 func ExpandTildeInPath(s string) string {
 	if strings.HasPrefix(s, "~") {
 		return UserHomeDir() + s[1:]
 	}
 	return s
+}
+
+func PanicIf(cond bool, args ...interface{}) {
+	if !cond {
+		return
+	}
+	msg := "invalid state"
+	if len(args) > 0 {
+		s, ok := args[0].(string)
+		if ok {
+			msg = s
+			if len(s) > 1 {
+				msg = fmt.Sprintf(msg, args[1:]...)
+			}
+		}
+	}
+	panic(msg)
+}
+
+func PanicIfErr(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
 }
