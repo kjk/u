@@ -53,6 +53,11 @@ func CreateDirIfNotExists(path string) error {
 	return nil
 }
 
+func CreateDirMust(path string) {
+	err := CreateDirIfNotExists(path)
+	PanicIfErr(err)
+}
+
 func CreateDirForFile(path string) error {
 	dir := filepath.Dir(path)
 	return CreateDirIfNotExists(dir)
