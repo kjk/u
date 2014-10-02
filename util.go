@@ -218,13 +218,14 @@ func IsMac() bool {
 	return runtime.GOOS == "darwin"
 }
 
-// Note: doesn't work when cross-compiling
 func UserHomeDir() string {
-	usr, _ := user.Current()
-	return usr.HomeDir
+	// user.Current() returns nil if cross-compiled e.g. on mac for linux
+	if usr, _ := user.Current(); usr != nil {
+		return usr.HomeDir
+	}
+	return os.Getenv("HOME")
 }
 
-// Note: doesn't work when cross-compiling
 func ExpandTildeInPath(s string) string {
 	if strings.HasPrefix(s, "~") {
 		return UserHomeDir() + s[1:]
