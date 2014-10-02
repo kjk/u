@@ -58,6 +58,13 @@ func CreateDirForFile(path string) error {
 	return CreateDirIfNotExists(dir)
 }
 
+func CreateDirForFileMust(path string) string {
+	dir := filepath.Dir(path)
+	err := CreateDirIfNotExists(dir)
+	PanicIfErr(err)
+	return dir
+}
+
 func WriteBytesToFile(d []byte, path string) error {
 	if err := CreateDirIfNotExists(filepath.Dir(path)); err != nil {
 		return err
