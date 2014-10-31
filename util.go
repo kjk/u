@@ -53,6 +53,13 @@ func CreateDirIfNotExists(path string) error {
 	return nil
 }
 
+func CreateDirIfNotExistsMust(dir string) string {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		PanicIfErr(err)
+	}
+	return dir
+}
+
 func CreateDirMust(path string) {
 	err := CreateDirIfNotExists(path)
 	PanicIfErr(err)
