@@ -84,23 +84,31 @@ func WriteBytesToFile(d []byte, path string) error {
 	return ioutil.WriteFile(path, d, 0644)
 }
 
-func FileSha1(path string) (string, error) {
+func Sha1OfFile(path string) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		//fmt.Printf("os.Open(%s) failed with %s\n", path, err.Error())
-		return "", err
+		return nil, err
 	}
 	defer f.Close()
 	h := sha1.New()
 	_, err = io.Copy(h, f)
 	if err != nil {
 		//fmt.Printf("io.Copy() failed with %s\n", err.Error())
-		return "", err
+		return nil, err
 	}
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	return h.Sum(nil), nil
 }
 
-func Sha1StringOfBytes(data []byte) string {
+func Sha1HexOfFile(path string) (string, error) {
+	sha1, err := Sha1OfFile(path)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", sha1), nil
+}
+
+func Sha1HexOfBytes(data []byte) string {
 	return fmt.Sprintf("%x", Sha1OfBytes(data))
 }
 
@@ -130,11 +138,6 @@ func ListFilesInDir(dir string, recursive bool) []string {
 		return nil
 	})
 	return files
-}
-
-// TODO: remove in favor of Sha1OfBytes
-func DataSha1(data []byte) (string, error) {
-	return Sha1StringOfBytes(data), nil
 }
 
 func DurationToString(d time.Duration) string {
