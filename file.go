@@ -41,9 +41,9 @@ func DirifyFileName(fn string) string {
 	return res + sep + fn[10:]
 }
 
-func CreateDirIfNotExists(path string) error {
-	if !PathExists(path) {
-		return os.MkdirAll(path, 0777)
+func CreateDirIfNotExists(dir string) error {
+	if !PathExists(dir) {
+		return os.MkdirAll(dir, 0755)
 	}
 	return nil
 }
