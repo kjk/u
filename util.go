@@ -3,7 +3,6 @@ package u
 import (
 	"crypto/sha1"
 	"fmt"
-	"io"
 	"os"
 	"os/user"
 	"runtime"
@@ -11,6 +10,7 @@ import (
 	"time"
 )
 
+// PanicIf panics if cond is true
 func PanicIf(cond bool, args ...interface{}) {
 	if !cond {
 		return
@@ -28,20 +28,24 @@ func PanicIf(cond bool, args ...interface{}) {
 	panic(msg)
 }
 
+// PanicIfErr panics if err is not nil
 func PanicIfErr(err error) {
 	if err != nil {
 		panic(err.Error())
 	}
 }
 
+// IsLinux returns true if running on linux
 func IsLinux() bool {
 	return runtime.GOOS == "linux"
 }
 
+// IsMac returns true if running on mac
 func IsMac() bool {
 	return runtime.GOOS == "darwin"
 }
 
+// UserHomeDir returns $HOME diretory of the user
 func UserHomeDir() string {
 	// user.Current() returns nil if cross-compiled e.g. on mac for linux
 	if usr, _ := user.Current(); usr != nil {
@@ -50,6 +54,7 @@ func UserHomeDir() string {
 	return os.Getenv("HOME")
 }
 
+// ExpandTildeInPath converts ~ to $HOME
 func ExpandTildeInPath(s string) string {
 	if strings.HasPrefix(s, "~") {
 		return UserHomeDir() + s[1:]
@@ -57,40 +62,19 @@ func ExpandTildeInPath(s string) string {
 	return s
 }
 
-func Sha1OfFile(path string) ([]byte, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		//fmt.Printf("os.Open(%s) failed with %s\n", path, err.Error())
-		return nil, err
-	}
-	defer f.Close()
-	h := sha1.New()
-	_, err = io.Copy(h, f)
-	if err != nil {
-		//fmt.Printf("io.Copy() failed with %s\n", err.Error())
-		return nil, err
-	}
-	return h.Sum(nil), nil
-}
-
-func Sha1HexOfFile(path string) (string, error) {
-	sha1, err := Sha1OfFile(path)
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%x", sha1), nil
-}
-
+// Sha1HexOfBytes returns 40-byte hex sha1 of bytes
 func Sha1HexOfBytes(data []byte) string {
 	return fmt.Sprintf("%x", Sha1OfBytes(data))
 }
 
+// Sha1OfBytes returns 20-byte sha1 of bytes
 func Sha1OfBytes(data []byte) []byte {
 	h := sha1.New()
 	h.Write(data)
 	return h.Sum(nil)
 }
 
+// DurationToString converts duration to a string
 func DurationToString(d time.Duration) string {
 	minutes := int(d.Minutes()) % 60
 	hours := int(d.Hours())
@@ -105,6 +89,7 @@ func DurationToString(d time.Duration) string {
 	return fmt.Sprintf("%dm", minutes)
 }
 
+// TimeSinceNowAsString returns string version of time since a ginve timestamp
 func TimeSinceNowAsString(t time.Time) string {
 	return DurationToString(time.Now().Sub(t))
 }

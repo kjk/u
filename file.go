@@ -3,19 +3,22 @@ package u
 import (
 	"archive/zip"
 	"bufio"
+	"crypto/sha1"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
-// treats any error (e.g. lack of access due to permissions) as non-existence
+// PathExists returns true if a filesystem path exists
+// Treats any error (e.g. lack of access due to permissions) as non-existence
 func PathExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
-// Returns true, nil if a path exists and is a directory
+// PathIsDir returns true if a path exists and is a directory
 // Returns false, nil if a path exists and is not a directory (e.g. a file)
 // Returns undefined, error if there was an error e.g. because a path doesn't exists
 func PathIsDir(path string) (isDir bool, err error) {
@@ -26,14 +29,16 @@ func PathIsDir(path string) (isDir bool, err error) {
 	return fi.IsDir(), nil
 }
 
+// GetFileSize returns size of the file
 func GetFileSize(path string) (int64, error) {
-	if fi, err := os.Lstat(path); err != nil {
+	fi, err := os.Lstat(path)
+	if err != nil {
 		return 0, err
-	} else {
-		return fi.Size(), nil
 	}
+	return fi.Size(), nil
 }
 
+// DirifyFileName converts a file name into sub-directories
 func DirifyFileName(fn string) string {
 	sep := string(os.PathSeparator)
 	res := fn[:2] + sep + fn[2:4] + sep
@@ -41,30 +46,31 @@ func DirifyFileName(fn string) string {
 	return res + sep + fn[10:]
 }
 
+// CreateDirIfNotExists creates a directory if it doesn't exist
 func CreateDirIfNotExists(dir string) error {
-	if !PathExists(dir) {
-		return os.MkdirAll(dir, 0755)
-	}
-	return nil
+	return os.MkdirAll(dir, 0755)
 }
 
+// CreateDirIfNotExistsMust creates a directory. Panics on error
 func CreateDirIfNotExistsMust(dir string) string {
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		PanicIfErr(err)
-	}
+	err := os.MkdirAll(dir, 0755)
+	PanicIfErr(err)
 	return dir
 }
 
+// CreateDirMust creates a directory. Panics on error
 func CreateDirMust(path string) {
 	err := CreateDirIfNotExists(path)
 	PanicIfErr(err)
 }
 
+// CreateDirForFile creates intermediary directories for a file
 func CreateDirForFile(path string) error {
 	dir := filepath.Dir(path)
 	return CreateDirIfNotExists(dir)
 }
 
+// CreateDirForFileMust is like CreateDirForFile. Panics on error.
 func CreateDirForFileMust(path string) string {
 	dir := filepath.Dir(path)
 	err := CreateDirIfNotExists(dir)
@@ -72,6 +78,8 @@ func CreateDirForFileMust(path string) string {
 	return dir
 }
 
+// WriteBytesToFile is like ioutil.WriteFile() but also creates intermediary
+// directories
 func WriteBytesToFile(d []byte, path string) error {
 	if err := CreateDirIfNotExists(filepath.Dir(path)); err != nil {
 		return err
@@ -79,6 +87,7 @@ func WriteBytesToFile(d []byte, path string) error {
 	return ioutil.WriteFile(path, d, 0644)
 }
 
+// ListFilesInDir returns a list of files in a directory
 func ListFilesInDir(dir string, recursive bool) []string {
 	files := make([]string, 0)
 	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -101,6 +110,7 @@ func ListFilesInDir(dir string, recursive bool) []string {
 	return files
 }
 
+// CopyFile copies a file
 func CopyFile(dst, src string) error {
 	fsrc, err := os.Open(src)
 	if err != nil {
@@ -118,7 +128,8 @@ func CopyFile(dst, src string) error {
 	return nil
 }
 
-// the names of files inside the zip file are relatitve to dirToZip e.g.
+// CreateZipWithDirContent creates a zip file with the content of a directory.
+// The names of files inside the zip file are relatitve to dirToZip e.g.
 // if dirToZip is foo and there is a file foo/bar.txt, the name in the zip
 // will be bar.txt
 func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
@@ -175,6 +186,7 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 	return nil
 }
 
+// ReadLinesFromReader reads all lines from io.Reader
 func ReadLinesFromReader(r io.Reader) ([]string, error) {
 	res := make([]string, 0)
 	scanner := bufio.NewScanner(r)
@@ -188,6 +200,7 @@ func ReadLinesFromReader(r io.Reader) ([]string, error) {
 	return res, nil
 }
 
+// ReadLinesFromFile reads all lines from a file
 func ReadLinesFromFile(path string) ([]string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -195,4 +208,30 @@ func ReadLinesFromFile(path string) ([]string, error) {
 	}
 	defer f.Close()
 	return ReadLinesFromReader(f)
+}
+
+// Sha1OfFile returns 20-byte sha1 of file content
+func Sha1OfFile(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		//fmt.Printf("os.Open(%s) failed with %s\n", path, err.Error())
+		return nil, err
+	}
+	defer f.Close()
+	h := sha1.New()
+	_, err = io.Copy(h, f)
+	if err != nil {
+		//fmt.Printf("io.Copy() failed with %s\n", err.Error())
+		return nil, err
+	}
+	return h.Sum(nil), nil
+}
+
+// Sha1HexOfFile returns 40-byte hex sha1 of file content
+func Sha1HexOfFile(path string) (string, error) {
+	sha1, err := Sha1OfFile(path)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", sha1), nil
 }
