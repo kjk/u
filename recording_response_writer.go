@@ -1,4 +1,4 @@
-package main
+package u
 
 import "net/http"
 
