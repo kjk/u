@@ -6,21 +6,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testShortenID(t *testing.T, n int) {
+func testEncodeBase64(t *testing.T, n int) {
 	s := EncodeBase64(n)
 	n2, err := DecodeBase64(s)
 	assert.Nil(t, err)
 	assert.Equal(t, n, n2)
 }
 
-func TestShortenId(t *testing.T) {
-	testShortenID(t, 1404040)
-	testShortenID(t, 0)
-	testShortenID(t, 1)
-	testShortenID(t, 35)
-	testShortenID(t, 36)
-	testShortenID(t, 37)
-	testShortenID(t, 123413343)
+func TestEncodeBase64(t *testing.T) {
+	testEncodeBase64(t, 1404040)
+	testEncodeBase64(t, 0)
+	testEncodeBase64(t, 1)
+	testEncodeBase64(t, 35)
+	testEncodeBase64(t, 36)
+	testEncodeBase64(t, 37)
+	testEncodeBase64(t, 123413343)
 	_, err := DecodeBase64("azasdf!")
 	assert.Error(t, err)
 }
