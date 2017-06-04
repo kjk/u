@@ -17,6 +17,18 @@ func PathExists(path string) bool {
 	return err == nil
 }
 
+// FileExists returns true if a given path exists and is a file
+func FileExists(path string) bool {
+	st, err := os.Stat(path)
+	return err == nil && !st.IsDir() && st.Mode().IsRegular()
+}
+
+// DirExists returns true if a given path exists and is a directory
+func DirExists(path string) bool {
+	st, err := os.Stat(path)
+	return err == nil && st.IsDir()
+}
+
 // PathIsDir returns true if a path exists and is a directory
 // Returns false, nil if a path exists and is not a directory (e.g. a file)
 // Returns undefined, error if there was an error e.g. because a path doesn't exists
