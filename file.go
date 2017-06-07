@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // PathExists returns true if a filesystem path exists
@@ -179,4 +180,17 @@ func Sha1HexOfFile(path string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", sha1), nil
+}
+
+func PathMatchesExtensions(path string, extensions []string) bool {
+	if len(extensions) == 0 {
+		return true
+	}
+	ext := strings.ToLower(filepath.Ext(path))
+	for _, allowed := range extensions {
+		if ext == allowed {
+			return true
+		}
+	}
+	return false
 }
