@@ -135,5 +135,5 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 		//fmt.Printf("Added %s to zip file\n", pathToZip)
 		return nil
 	})
-	return nil
+	return err
 }

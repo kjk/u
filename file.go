@@ -182,6 +182,7 @@ func Sha1HexOfFile(path string) (string, error) {
 	return fmt.Sprintf("%x", sha1), nil
 }
 
+// PathMatchesExtensions returns true if path matches any of the extensions
 func PathMatchesExtensions(path string, extensions []string) bool {
 	if len(extensions) == 0 {
 		return true
