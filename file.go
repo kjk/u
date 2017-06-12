@@ -132,7 +132,7 @@ func CopyFile(dst, src string) error {
 	return nil
 }
 
-// ReadLinesFromReader reads all lines from io.Reader
+// ReadLinesFromReader reads all lines from io.Reader. Newlines are not included.
 func ReadLinesFromReader(r io.Reader) ([]string, error) {
 	res := make([]string, 0)
 	scanner := bufio.NewScanner(r)
@@ -146,7 +146,7 @@ func ReadLinesFromReader(r io.Reader) ([]string, error) {
 	return res, nil
 }
 
-// ReadLinesFromFile reads all lines from a file
+// ReadLinesFromFile reads all lines from a file. Newlines are not included.
 func ReadLinesFromFile(path string) ([]string, error) {
 	f, err := os.Open(path)
 	if err != nil {
