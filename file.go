@@ -195,3 +195,26 @@ func PathMatchesExtensions(path string, extensions []string) bool {
 	}
 	return false
 }
+
+// DeleteFilesIf deletes a files in a given directory if shouldDelete callback
+// returns true
+func DeleteFilesIf(dir string, shouldDelete func(os.FileInfo) bool) error {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, fi := range files {
+		if fi.IsDir() || !fi.Mode().IsRegular() {
+			continue
+		}
+		if shouldDelete(fi) {
+			path := filepath.Join(dir, fi.Name())
+			err = os.Remove(path)
+			// Maybe: keep deleting?
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
