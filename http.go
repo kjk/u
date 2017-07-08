@@ -15,9 +15,9 @@ func ipAddrFromRemoteAddr(s string) string {
 	return s[:idx]
 }
 
-// RequestGetIPAddress returns ip address of the client making the request,
+// RequestGetRemoteAddress returns ip address of the client making the request,
 // taking into account http proxies
-func RequestGetIPAddress(r *http.Request) string {
+func RequestGetRemoteAddress(r *http.Request) string {
 	hdr := r.Header
 	hdrRealIP := hdr.Get("X-Real-Ip")
 	hdrForwardedFor := hdr.Get("X-Forwarded-For")
@@ -34,4 +34,25 @@ func RequestGetIPAddress(r *http.Request) string {
 		return parts[0]
 	}
 	return hdrRealIP
+}
+
+// RequestGetProtocol returns protocol under which the request is being served i.e. "http" or "https"
+func RequestGetProtocol(r *http.Request) string {
+	hdr := r.Header
+	// X-Forwarded-Proto is set by proxies e.g. CloudFlare
+	forwardedProto := strings.TrimSpace(strings.ToLower(hdr.Get("X-Forwarded-Proto")))
+	if forwardedProto != "" {
+		if forwardedProto == "http" || forwardedProto == "https" {
+			return forwardedProto
+		}
+	}
+	if r.TLS != nil {
+		return "https"
+	}
+	return "http"
+}
+
+// RequestGetFullHost returns full host name e.g. "https://blog.kowalczyk.info/"
+func RequestGetFullHost(r *http.Request) string {
+	return RequestGetProtocol(r) + "://" + r.Host
 }
