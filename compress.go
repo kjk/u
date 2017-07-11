@@ -5,6 +5,7 @@ import (
 	"compress/bzip2"
 	"compress/gzip"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -55,6 +56,46 @@ func OpenFileMaybeCompressed(path string) (io.ReadCloser, error) {
 		return rc, nil
 	}
 	return f, nil
+}
+
+// ReadFileMaybeCompressed reads file. Ungzips if it's gzipped.
+func ReadFileMaybeCompressed(path string) ([]byte, error) {
+	r, err := OpenFileMaybeCompressed(path)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	return ioutil.ReadAll(r)
+}
+
+// WriteFileGzipped writes data to a path, using best gzip compression
+func WriteFileGzipped(path string, data []byte) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	w, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(data)
+	if err != nil {
+		f.Close()
+		os.Remove(path)
+		return err
+	}
+	err = w.Close()
+	if err != nil {
+		f.Close()
+		os.Remove(path)
+		return err
+	}
+	err = f.Close()
+	if err != nil {
+		os.Remove(path)
+		return err
+	}
+	return nil
 }
 
 // GzipFile compresses srcPath with gzip and saves as dstPath
