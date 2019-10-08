@@ -21,7 +21,7 @@ func PathExists(path string) bool {
 // FileExists returns true if a given path exists and is a file
 func FileExists(path string) bool {
 	st, err := os.Stat(path)
-	return err == nil && !st.IsDir() && st.Mode().IsRegular()
+	return err == nil && st.Mode().IsRegular()
 }
 
 // DirExists returns true if a given path exists and is a directory
@@ -91,6 +91,23 @@ func WriteBytesToFile(d []byte, path string) error {
 	return ioutil.WriteFile(path, d, 0644)
 }
 
+func WriteFileMust(path string, data []byte) {
+	err := ioutil.WriteFile(path, data, 0644)
+	Must(err)
+}
+
+func ReadFileMust(path string) []byte {
+	d, err := ioutil.ReadFile(path)
+	Must(err)
+	return d
+}
+
+// like f.Close() but ignores an error so better to use as
+// defer FileClose(f)
+func FileClose(f io.Closer) {
+	_ = f.Close()
+}
+
 // ListFilesInDir returns a list of files in a directory
 func ListFilesInDir(dir string, recursive bool) []string {
 	files := make([]string, 0)
@@ -114,6 +131,22 @@ func ListFilesInDir(dir string, recursive bool) []string {
 	return files
 }
 
+func RemoveFilesInDirMust(dir string) {
+	if !DirExists(dir) {
+		return
+	}
+	files, err := ioutil.ReadDir(dir)
+	Must(err)
+	for _, fi := range files {
+		if !fi.Mode().IsRegular() {
+			continue
+		}
+		path := filepath.Join(dir, fi.Name())
+		err = os.Remove(path)
+		Must(err)
+	}
+}
+
 // CopyFile copies a file
 func CopyFile(dst, src string) error {
 	fsrc, err := os.Open(src)
@@ -130,6 +163,10 @@ func CopyFile(dst, src string) error {
 		return err
 	}
 	return nil
+}
+
+func CopyFileMust(dst, src string) {
+	Must(CopyFile(dst, src))
 }
 
 // ReadLinesFromReader reads all lines from io.Reader. Newlines are not included.

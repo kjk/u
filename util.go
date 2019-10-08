@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"os/user"
 	"runtime"
 	"strings"
 	"time"
@@ -15,6 +14,37 @@ import (
 var (
 	errInvalidBase64 = errors.New("Invalid base64 value")
 )
+
+func Must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Assert(ok bool, format string, args ...interface{}) {
+	if ok {
+		return
+	}
+	if len(args) == 0 {
+		panic(format)
+	}
+	panic(fmt.Sprintf(format, args...))
+}
+
+// PanicIf panics if cond is true
+func PanicIf(cond bool, args ...interface{}) {
+	if !cond {
+		return
+	}
+	if len(args) == 0 {
+		panic("condition failed")
+	}
+	format := args[0].(string)
+	if len(args) == 1 {
+		panic(format)
+	}
+	panic(fmt.Sprintf(format, args[1:]...))
+}
 
 // FmtArgs formats args as a string. First argument should be format string
 // and the rest are arguments to the format
@@ -38,20 +68,6 @@ func panicWithMsg(defaultMsg string, args ...interface{}) {
 	panic(s)
 }
 
-func Must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-// PanicIf panics if cond is true
-func PanicIf(cond bool, args ...interface{}) {
-	if !cond {
-		return
-	}
-	panicWithMsg("PanicIf: condition failed", args...)
-}
-
 // PanicIfErr panics if err is not nil
 func PanicIfErr(err error, args ...interface{}) {
 	if err == nil {
@@ -72,11 +88,9 @@ func IsMac() bool {
 
 // UserHomeDir returns $HOME diretory of the user
 func UserHomeDir() string {
-	// user.Current() returns nil if cross-compiled e.g. on mac for linux
-	if usr, _ := user.Current(); usr != nil {
-		return usr.HomeDir
-	}
-	return os.Getenv("HOME")
+	s, err := os.UserHomeDir()
+	Must(err)
+	return s
 }
 
 // ExpandTildeInPath converts ~ to $HOME
