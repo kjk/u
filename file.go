@@ -218,3 +218,27 @@ func DeleteFilesIf(dir string, shouldDelete func(os.FileInfo) bool) error {
 	}
 	return nil
 }
+
+// absolute path of the current directory
+func CurrDirAbsMust() string {
+	dir, err := filepath.Abs(".")
+	Must(err)
+	return dir
+}
+
+// we are executed for do/ directory so top dir is parent dir
+func CdUpDir(dirName string) {
+	startDir := CurrDirAbsMust()
+	dir := startDir
+	for {
+		// we're already in top directory
+		if filepath.Base(dir) == dirName {
+			err := os.Chdir(dir)
+			Must(err)
+			return
+		}
+		parentDir := filepath.Dir(dir)
+		PanicIf(dir == parentDir, "invalid startDir: '%s', dir: '%s'", startDir, dir)
+		dir = parentDir
+	}
+}

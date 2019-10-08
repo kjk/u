@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/user"
 	"runtime"
 	"strings"
@@ -35,6 +36,12 @@ func panicWithMsg(defaultMsg string, args ...interface{}) {
 	}
 	fmt.Printf("%s\n", s)
 	panic(s)
+}
+
+func Must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 // PanicIf panics if cond is true
@@ -153,4 +160,21 @@ func DecodeBase64(s string) (int, error) {
 		n += i
 	}
 	return n, nil
+}
+
+// OpenBrowsers open web browser with a given url
+// (can be http:// or file://)
+func OpenBrowser(url string) error {
+	var err error
+	switch runtime.GOOS {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+	return err
 }
