@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	errInvalidBase64 = errors.New("Invalid base64 value")
+	errInvalidBase64 = errors.New("invalid base64 value")
 )
 
 func Must(err error) {
@@ -130,7 +130,7 @@ func DurationToString(d time.Duration) string {
 
 // TimeSinceNowAsString returns string version of time since a ginve timestamp
 func TimeSinceNowAsString(t time.Time) string {
-	return DurationToString(time.Now().Sub(t))
+	return DurationToString(time.Since(t))
 }
 
 // UtcNow returns current time in UTC

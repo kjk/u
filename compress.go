@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"compress/bzip2"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -177,4 +178,80 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 		return nil
 	})
 	return err
+}
+
+func ReadZipFileMust(path string) map[string][]byte {
+	r, err := zip.OpenReader(path)
+	Must(err)
+	defer FileClose(r)
+	res := map[string][]byte{}
+	for _, f := range r.File {
+		rc, err := f.Open()
+		Must(err)
+		d, err := ioutil.ReadAll(rc)
+		Must(err)
+		_ = rc.Close()
+		res[f.Name] = d
+	}
+	return res
+}
+
+func zipAddFile(zw *zip.Writer, zipName string, path string) {
+	zipName = filepath.ToSlash(zipName)
+	d, err := ioutil.ReadFile(path)
+	Must(err)
+	w, err := zw.Create(zipName)
+	Must(err)
+	_, err = w.Write(d)
+	Must(err)
+	fmt.Printf("  added %s from %s\n", zipName, path)
+}
+
+func zipDirRecur(zw *zip.Writer, baseDir string, dirToZip string) {
+	dir := filepath.Join(baseDir, dirToZip)
+	files, err := ioutil.ReadDir(dir)
+	Must(err)
+	for _, fi := range files {
+		if fi.IsDir() {
+			zipDirRecur(zw, baseDir, filepath.Join(dirToZip, fi.Name()))
+		} else if fi.Mode().IsRegular() {
+			zipName := filepath.Join(dirToZip, fi.Name())
+			path := filepath.Join(baseDir, zipName)
+			zipAddFile(zw, zipName, path)
+		} else {
+			path := filepath.Join(baseDir, fi.Name())
+			s := fmt.Sprintf("%s is not a dir or regular file", path)
+			panic(s)
+		}
+	}
+}
+
+// toZip is a list of files and directories in baseDir
+// Directories are added recursively
+func CreateZipFile(dst string, baseDir string, toZip ...string) {
+	os.Remove(dst)
+	if len(toZip) == 0 {
+		panic("must provide toZip args")
+	}
+	fmt.Printf("Creating zip file %s\n", dst)
+	w, err := os.Create(dst)
+	Must(err)
+	defer FileClose(w)
+	zw := zip.NewWriter(w)
+	Must(err)
+	for _, name := range toZip {
+		path := filepath.Join(baseDir, name)
+		fi, err := os.Stat(path)
+		Must(err)
+		if fi.IsDir() {
+			zipDirRecur(zw, baseDir, name)
+		} else if fi.Mode().IsRegular() {
+			zipAddFile(zw, name, path)
+		} else {
+			s := fmt.Sprintf("%s is not a dir or regular file", path)
+			panic(s)
+		}
+	}
+	err = zw.Close()
+	Must(err)
 }

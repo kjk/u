@@ -2,6 +2,7 @@ package u
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/sha1"
 	"fmt"
 	"io"
@@ -9,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/dustin/go-humanize"
 )
 
 // PathExists returns true if a filesystem path exists
@@ -278,4 +281,23 @@ func CdUpDir(dirName string) {
 		PanicIf(dir == parentDir, "invalid startDir: '%s', dir: '%s'", startDir, dir)
 		dir = parentDir
 	}
+}
+
+func FmtSizeHuman(size int64) string {
+	return humanize.Bytes(uint64(size))
+}
+
+func PrintFileSize(path string) {
+	st, err := os.Stat(path)
+	if err != nil {
+		fmt.Printf("File '%s' doesn't exist\n", path)
+		return
+	}
+	fmt.Printf("'%s': %s\n", path, FmtSizeHuman(st.Size()))
+}
+
+func AreFilesEuqalMust(path1, path2 string) bool {
+	d1 := ReadFileMust(path1)
+	d2 := ReadFileMust(path2)
+	return bytes.Equal(d1, d2)
 }
