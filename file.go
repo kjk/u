@@ -61,14 +61,14 @@ func CreateDirIfNotExists(dir string) error {
 // CreateDirIfNotExistsMust creates a directory. Panics on error
 func CreateDirIfNotExistsMust(dir string) string {
 	err := os.MkdirAll(dir, 0755)
-	PanicIfErr(err)
+	Must(err)
 	return dir
 }
 
 // CreateDirMust creates a directory. Panics on error
 func CreateDirMust(path string) {
 	err := CreateDirIfNotExists(path)
-	PanicIfErr(err)
+	Must(err)
 }
 
 // CreateDirForFile creates intermediary directories for a file
@@ -81,7 +81,7 @@ func CreateDirForFile(path string) error {
 func CreateDirForFileMust(path string) string {
 	dir := filepath.Dir(path)
 	err := CreateDirIfNotExists(dir)
-	PanicIfErr(err)
+	Must(err)
 	return dir
 }
 
@@ -300,4 +300,45 @@ func AreFilesEuqalMust(path1, path2 string) bool {
 	d1 := ReadFileMust(path1)
 	d2 := ReadFileMust(path2)
 	return bytes.Equal(d1, d2)
+}
+
+func FilesSameSize(path1, path2 string) bool {
+	s1, err := GetFileSize(path1)
+	if err != nil {
+		return false
+	}
+	s2, err := GetFileSize(path2)
+	if err != nil {
+		return false
+	}
+	return s1 == s2
+}
+
+func CopyDirRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool) {
+	CreateDirMust(dstDir)
+	fileInfos, err := ioutil.ReadDir(srcDir)
+	Must(err)
+	for _, fi := range fileInfos {
+		name := fi.Name()
+		if fi.IsDir() {
+			dst := filepath.Join(dstDir, name)
+			src := filepath.Join(srcDir, name)
+			CopyDirRecurMust(dst, src, shouldCopyFn)
+			continue
+		}
+
+		src := filepath.Join(srcDir, name)
+		dst := filepath.Join(dstDir, name)
+		shouldCopy := true
+		if shouldCopyFn != nil {
+			shouldCopy = shouldCopyFn(src)
+		}
+		if !shouldCopy {
+			continue
+		}
+		if FilesSameSize(dst, src) {
+			continue
+		}
+		CopyFileMust(dst, src)
+	}
 }
