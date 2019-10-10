@@ -272,7 +272,7 @@ func CdUpDir(dirName string) {
 	dir := startDir
 	for {
 		// we're already in top directory
-		if filepath.Base(dir) == dirName {
+		if filepath.Base(dir) == dirName && DirExists(dir) {
 			err := os.Chdir(dir)
 			Must(err)
 			return
