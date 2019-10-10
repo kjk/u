@@ -87,7 +87,7 @@ func IsMac() bool {
 }
 
 // UserHomeDir returns $HOME diretory of the user
-func UserHomeDir() string {
+func UserHomeDirMust() string {
 	s, err := os.UserHomeDir()
 	Must(err)
 	return s
@@ -96,7 +96,7 @@ func UserHomeDir() string {
 // ExpandTildeInPath converts ~ to $HOME
 func ExpandTildeInPath(s string) string {
 	if strings.HasPrefix(s, "~") {
-		return UserHomeDir() + s[1:]
+		return UserHomeDirMust() + s[1:]
 	}
 	return s
 }

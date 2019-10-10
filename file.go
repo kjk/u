@@ -150,6 +150,19 @@ func RemoveFilesInDirMust(dir string) {
 	}
 }
 
+func RemoveFileLogged(path string) {
+	err := os.Remove(path)
+	if err == nil {
+		Logf("removeFile('%s')", path)
+		return
+	}
+	if os.IsNotExist(err) {
+		// TODO: maybe should print note
+		return
+	}
+	Logf("os.Remove('%s') failed with '%s'\n", path, err)
+}
+
 // CopyFile copies a file
 func CopyFile(dst, src string) error {
 	fsrc, err := os.Open(src)
