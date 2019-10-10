@@ -105,9 +105,9 @@ func ReadFileMust(path string) []byte {
 	return d
 }
 
-// like f.Close() but ignores an error so better to use as
-// defer FileClose(f)
-func FileClose(f io.Closer) {
+// like io.Closer Close() but ignores an error so better to use as
+// defer CloseNoError(f)
+func CloseNoError(f io.Closer) {
 	_ = f.Close()
 }
 

@@ -183,7 +183,7 @@ func CreateZipWithDirContent(zipFilePath, dirToZip string) error {
 func ReadZipFileMust(path string) map[string][]byte {
 	r, err := zip.OpenReader(path)
 	Must(err)
-	defer FileClose(r)
+	defer CloseNoError(r)
 	res := map[string][]byte{}
 	for _, f := range r.File {
 		rc, err := f.Open()
@@ -236,7 +236,7 @@ func CreateZipFile(dst string, baseDir string, toZip ...string) {
 	fmt.Printf("Creating zip file %s\n", dst)
 	w, err := os.Create(dst)
 	Must(err)
-	defer FileClose(w)
+	defer CloseNoError(w)
 	zw := zip.NewWriter(w)
 	Must(err)
 	for _, name := range toZip {
