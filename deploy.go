@@ -12,8 +12,8 @@ var (
 	IdentityFilePath string
 )
 
-func SshInteractive(identityFile string, user string) {
-	cmd := exec.Command("ssh", "-i", identityFile, user)
+func SshInteractive(user string) {
+	cmd := exec.Command("ssh", "-i", IdentityFilePath, user)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -22,7 +22,7 @@ func SshInteractive(identityFile string, user string) {
 
 func LoginAsRoot() {
 	user := fmt.Sprintf("root@%s", ServerIPAddress)
-	SshInteractive(IdentityFilePath, user)
+	SshInteractive(user)
 }
 
 // "-o StrictHostKeyChecking=no" is for the benefit of CI which start
