@@ -22,7 +22,7 @@ func GitStatusMust(dir string) string {
 	return RunCmdMust(cmd)
 }
 
-func IsGitCleanMust(dir string) bool {
+func IsGitClean(dir string) bool {
 	s := GitStatusMust(dir)
 	expected := []string{
 		"On branch master",
@@ -31,9 +31,15 @@ func IsGitCleanMust(dir string) bool {
 	}
 	for _, exp := range expected {
 		if !strings.Contains(s, exp) {
-			fmt.Printf("Git repo in '%s' not clean.\nDidn't find '%s' in output of git status:\n%s\n", dir, exp, s)
+			Logf("Git repo in '%s' not clean.\nDidn't find '%s' in output of git status:\n%s\n", dir, exp, s)
 			return false
 		}
 	}
 	return true
+}
+
+func EnsureGitClean(dir string) {
+	if !IsGitClean(dir) {
+		Must(fmt.Errorf("git repo in '%s' is not clean", dir))
+	}
 }
