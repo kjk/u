@@ -327,16 +327,32 @@ func FilesSameSize(path1, path2 string) bool {
 	return s1 == s2
 }
 
-func CopyDirRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool) {
-	CreateDirMust(dstDir)
-	fileInfos, err := ioutil.ReadDir(srcDir)
+func DirCopyRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool) int {
+	n, err := DirCopyRecur(dstDir, srcDir, shouldCopyFn)
 	Must(err)
+	return n
+}
+
+func DirCopyRecur(dstDir, srcDir string, shouldCopyFn func(path string) bool) (int, error) {
+	err := CreateDirIfNotExists(dstDir)
+	if err != nil {
+		return 0, err
+	}
+	fileInfos, err := ioutil.ReadDir(srcDir)
+	if err != nil {
+		return 0, err
+	}
+	nCopied := 0
 	for _, fi := range fileInfos {
 		name := fi.Name()
 		if fi.IsDir() {
 			dst := filepath.Join(dstDir, name)
 			src := filepath.Join(srcDir, name)
-			CopyDirRecurMust(dst, src, shouldCopyFn)
+			n, err := DirCopyRecur(dst, src, shouldCopyFn)
+			if err != nil {
+				return 0, err
+			}
+			nCopied += n
 			continue
 		}
 
@@ -354,4 +370,5 @@ func CopyDirRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool
 		}
 		CopyFileMust(dst, src)
 	}
+	return nCopied, nil
 }
