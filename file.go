@@ -85,9 +85,9 @@ func CreateDirForFileMust(path string) string {
 	return dir
 }
 
-// WriteBytesToFile is like ioutil.WriteFile() but also creates intermediary
-// directories
-func WriteBytesToFile(d []byte, path string) error {
+// WriteFileCreateDirMust is like ioutil.WriteFile() but also creates
+// intermediary directories
+func WriteFileCreateDirMust(d []byte, path string) error {
 	if err := CreateDirIfNotExists(filepath.Dir(path)); err != nil {
 		return err
 	}

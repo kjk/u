@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStringArrayRemoveFirst(t *testing.T) {
+func TestStringsRemoveFirst(t *testing.T) {
 	tests := [][]string{
 		nil, nil,
 		[]string{"a"}, []string{},
@@ -14,7 +14,7 @@ func TestStringArrayRemoveFirst(t *testing.T) {
 	}
 	n := len(tests) / 2
 	for i := 0; i < n; i++ {
-		got := StringArrayRemoveFirst(tests[i*2])
+		got := StringsRemoveFirst(tests[i*2])
 		exp := tests[i*2+1]
 		assert.Equal(t, exp, got)
 	}

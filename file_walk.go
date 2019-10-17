@@ -45,7 +45,7 @@ func fileWalkWorker(ft *FileWalk) {
 		// would be more efficient to shift by one and
 		// chop off at the end
 		dir := toVisit[0]
-		toVisit = StringArrayRemoveFirst(toVisit)
+		toVisit = StringsRemoveFirst(toVisit)
 
 		files, err := ioutil.ReadDir(dir)
 		// TODO: should I send errors as well?

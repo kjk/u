@@ -1,7 +1,6 @@
 package u
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -114,14 +113,6 @@ func MakeFilterAnd(filters ...FilterFunc) FilterFunc {
 	}
 }
 
-func normalizeNewlines(d []byte) []byte {
-	// replace CR LF \r\n (windows) with LF \n (unix)
-	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
-	// replace CF \r (mac) with LF \n (unix)
-	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
-	return d
-}
-
 // FileLineCount returns number of lines in a file
 func FileLineCount(path string) (int, error) {
 	d, err := ioutil.ReadFile(path)
@@ -131,8 +122,7 @@ func FileLineCount(path string) (int, error) {
 	if len(d) == 0 {
 		return 0, nil
 	}
-	// normalize newlines
-	d = normalizeNewlines(d)
+	d = NormalizeNewlines(d)
 	nLines := 1
 	n := len(d)
 	for i := 0; i < n; i++ {

@@ -1,9 +1,12 @@
 package u
 
-import "sort"
+import (
+	"bytes"
+	"sort"
+)
 
-// StringArrayRemoveFirst removes first
-func StringArrayRemoveFirst(a []string) []string {
+// StringsRemoveFirst removes first sstring from the slice
+func StringsRemoveFirst(a []string) []string {
 	n := len(a)
 	if n > 0 {
 		copy(a[:n-1], a[1:])
@@ -30,4 +33,13 @@ func RemoveDuplicateStrings(a []string) []string {
 		writeIdx++
 	}
 	return a[:writeIdx]
+}
+
+// NormalizeNewLines changes CR and CRLF into LF
+func NormalizeNewlines(d []byte) []byte {
+	// replace CR LF \r\n (windows) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13, 10}, []byte{10}, -1)
+	// replace CF \r (mac) with LF \n (unix)
+	d = bytes.Replace(d, []byte{13}, []byte{10}, -1)
+	return d
 }
