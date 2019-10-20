@@ -27,6 +27,16 @@ func FmtSmart(format string, args ...interface{}) string {
 	return fmt.Sprintf(format, args...)
 }
 
+// StringInSlice returns true if a string is present in slice
+func StringInSlice(a []string, toCheck string) bool {
+	for _, s := range a {
+		if s == toCheck {
+			return true
+		}
+	}
+	return false
+}
+
 // StringsRemoveFirst removes first sstring from the slice
 func StringsRemoveFirst(a []string) []string {
 	n := len(a)
@@ -37,12 +47,33 @@ func StringsRemoveFirst(a []string) []string {
 	return a
 }
 
+// StringRemoveFromSlice removes a given string from a slice of strings
+// returns a (potentially) new slice and true if was removed
+func StringRemoveFromSlice(a []string, toRemove string) ([]string, bool) {
+	n := len(a)
+	if n == 0 {
+		return nil, false
+	}
+	res := make([]string, 0, n)
+	for _, s := range a {
+		if s != toRemove {
+			res = append(res, s)
+		}
+	}
+	didRemove := len(res) != len(a)
+	if !didRemove {
+		return a, false
+	}
+	return res, true
+}
+
 // RemoveDuplicateStrings removes duplicate strings from an array of strings.
 // It's optimized for the case of no duplicates. It modifes a in place.
 func RemoveDuplicateStrings(a []string) []string {
 	if len(a) < 2 {
 		return a
 	}
+	// sort and remove dupplicates (which are now grouped)
 	sort.Strings(a)
 	writeIdx := 1
 	for i := 1; i < len(a); i++ {
