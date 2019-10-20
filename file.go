@@ -328,12 +328,6 @@ func FilesSameSize(path1, path2 string) bool {
 	return s1 == s2
 }
 
-func DirCopyRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool) int {
-	n, err := DirCopyRecur(dstDir, srcDir, shouldCopyFn)
-	Must(err)
-	return n
-}
-
 func DirCopyRecur(dstDir, srcDir string, shouldCopyFn func(path string) bool) (int, error) {
 	err := CreateDirIfNotExists(dstDir)
 	if err != nil {
@@ -366,10 +360,14 @@ func DirCopyRecur(dstDir, srcDir string, shouldCopyFn func(path string) bool) (i
 		if !shouldCopy {
 			continue
 		}
-		if FilesSameSize(dst, src) {
-			continue
-		}
 		CopyFileMust(dst, src)
+		nCopied++
 	}
 	return nCopied, nil
+}
+
+func DirCopyRecurMust(dstDir, srcDir string, shouldCopyFn func(path string) bool) int {
+	n, err := DirCopyRecur(dstDir, srcDir, shouldCopyFn)
+	Must(err)
+	return n
 }
