@@ -66,9 +66,10 @@ func CreateDirIfNotExistsMust(dir string) string {
 }
 
 // CreateDirMust creates a directory. Panics on error
-func CreateDirMust(path string) {
+func CreateDirMust(path string) string {
 	err := CreateDirIfNotExists(path)
 	Must(err)
+	return path
 }
 
 // CreateDirForFile creates intermediary directories for a file
