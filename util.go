@@ -48,19 +48,6 @@ func PanicIf(cond bool, args ...interface{}) {
 	panic(fmt.Sprintf(format, args[1:]...))
 }
 
-// FmtArgs formats args as a string. First argument should be format string
-// and the rest are arguments to the format
-func FmtArgs(args ...interface{}) string {
-	if len(args) == 0 {
-		return ""
-	}
-	format := args[0].(string)
-	if len(args) == 1 {
-		return format
-	}
-	return fmt.Sprintf(format, args[1:]...)
-}
-
 func panicWithMsg(defaultMsg string, args ...interface{}) {
 	s := FmtArgs(args...)
 	if s == "" {
