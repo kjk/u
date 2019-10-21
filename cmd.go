@@ -2,11 +2,21 @@ package u
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 )
 
+// RunCmdLoggedMust runs a command and returns its stdout
+// Shows output as it happens
+func RunCmdLoggedMust(cmd *exec.Cmd) string {
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return RunCmdMust(cmd)
+}
+
+// RunCmdMust runs a command and returns its stdout
 func RunCmdMust(cmd *exec.Cmd) string {
 	fmt.Printf("> %s\n", cmd)
 	canCapture := (cmd.Stdout == nil) && (cmd.Stderr == nil)
