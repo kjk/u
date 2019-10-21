@@ -13,7 +13,7 @@ var (
 )
 
 func SshInteractive(user string) {
-	PanicIf(IdentityFilePath == "", "No identity file")
+	panicIfServerInfoNotSet()
 	cmd := exec.Command("ssh", "-i", IdentityFilePath, user)
 	cmd.Stdin = os.Stdin
 	RunCmdLoggedMust(cmd)
@@ -27,7 +27,7 @@ func LoginAsRoot() {
 // "-o StrictHostKeyChecking=no" is for the benefit of CI which start
 // fresh environment
 func ScpCopy(localSrcPath string, serverDstPath string) {
-	PanicIf(IdentityFilePath == "", "No identity file")
+	panicIfServerInfoNotSet()
 	cmd := exec.Command("scp", "-o", "StrictHostKeyChecking=no", "-i", IdentityFilePath, localSrcPath, serverDstPath)
 	RunCmdLoggedMust(cmd)
 }
@@ -35,7 +35,7 @@ func ScpCopy(localSrcPath string, serverDstPath string) {
 // "-o StrictHostKeyChecking=no" is for the benefit of CI which start
 // fresh environment
 func SshExec(user string, script string) {
-	PanicIf(IdentityFilePath == "", "No identity file")
+	panicIfServerInfoNotSet()
 	cmd := exec.Command("ssh", "-o", "StrictHostKeyChecking=no", "-i", IdentityFilePath, user)
 	r := bytes.NewBufferString(script)
 	cmd.Stdin = r
@@ -51,9 +51,16 @@ rm ./%s
 	return script
 }
 
+func panicIfServerInfoNotSet() {
+	PanicIf(IdentityFilePath == "", "IdentityFilePath not set")
+	PanicIf(!FileExists(IdentityFilePath), "IdentityFilePath '%s' doesn't exist", IdentityFilePath)
+	PanicIf(ServerIPAddress == "", "ServerIPAddress not set")
+}
+
 func CopyAndExecServerScript(scriptPath, user string) {
-	PanicIf(IdentityFilePath == "", "No identity file")
+	panicIfServerInfoNotSet()
 	PanicIf(!FileExists(scriptPath), "script file '%s' doesn't exist", scriptPath)
+
 	serverAndUser := fmt.Sprintf("%s@%s", user, ServerIPAddress)
 	serverPath := "/root/" + scriptPath
 	if user != "root" {
