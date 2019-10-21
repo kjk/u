@@ -60,21 +60,22 @@ func panicIfServerInfoNotSet() {
 
 // CopyAndExecServerScript copies a given script to the server and executes
 // it under a given user name
-func CopyAndExecServerScript(scriptPath, user string) {
+func CopyAndExecServerScript(scriptLocalPath, user string) {
 	panicIfServerInfoNotSet()
-	PanicIf(!FileExists(scriptPath), "script file '%s' doesn't exist", scriptPath)
+	PanicIf(!FileExists(scriptLocalPath), "script file '%s' doesn't exist", scriptLocalPath)
 
 	serverAndUser := fmt.Sprintf("%s@%s", user, ServerIPAddress)
-	serverPath := "/root/" + filepath.Base(scriptPath)
+	scriptBaseName := filepath.Base(scriptLocalPath)
+	scriptServerPath := "/root/" + scriptBaseName
 	if user != "root" {
-		serverPath = "/home/" + user + "/" + scriptPath
+		scriptServerPath = "/home/" + user + "/" + scriptBaseName
 	}
 	{
-		serverDstPath := fmt.Sprintf("%s:%s", serverAndUser, serverPath)
-		ScpCopy(scriptPath, serverDstPath)
+		serverDstPath := fmt.Sprintf("%s:%s", serverAndUser, scriptServerPath)
+		ScpCopy(scriptLocalPath, serverDstPath)
 	}
 	{
-		script := MakeExecScript(scriptPath)
+		script := MakeExecScript(scriptServerPath)
 		SshExec(serverAndUser, script)
 	}
 }
