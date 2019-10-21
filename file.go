@@ -154,7 +154,7 @@ func RemoveFilesInDirMust(dir string) {
 func RemoveFileLogged(path string) {
 	err := os.Remove(path)
 	if err == nil {
-		Logf("removeFile('%s')", path)
+		Logf("RemoveFileLogged('%s')\n", path)
 		return
 	}
 	if os.IsNotExist(err) {
