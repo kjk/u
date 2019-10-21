@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 var (
@@ -57,12 +58,14 @@ func panicIfServerInfoNotSet() {
 	PanicIf(ServerIPAddress == "", "ServerIPAddress not set")
 }
 
+// CopyAndExecServerScript copies a given script to the server and executes
+// it under a given user name
 func CopyAndExecServerScript(scriptPath, user string) {
 	panicIfServerInfoNotSet()
 	PanicIf(!FileExists(scriptPath), "script file '%s' doesn't exist", scriptPath)
 
 	serverAndUser := fmt.Sprintf("%s@%s", user, ServerIPAddress)
-	serverPath := "/root/" + scriptPath
+	serverPath := "/root/" + filepath.Base(scriptPath)
 	if user != "root" {
 		serverPath = "/home/" + user + "/" + scriptPath
 	}
