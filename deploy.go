@@ -45,9 +45,9 @@ func SshExec(user string, script string) {
 
 func MakeExecScript(name string) string {
 	script := fmt.Sprintf(`
-chmod ug+x ./%s
-./%s
-rm ./%s
+chmod ug+x %s
+%s
+rm %s
 	`, name, name, name)
 	return script
 }
