@@ -34,6 +34,7 @@ func (c *MinioClient) URLBase() string {
 	return fmt.Sprintf("https://%s.%s/", c.Bucket, c.Endpoint)
 }
 
+// GetClient returns a (cached) minio client
 func (c *MinioClient) GetClient() (*minio.Client, error) {
 	if c.client != nil {
 		return c.client, nil
@@ -45,6 +46,7 @@ func (c *MinioClient) GetClient() (*minio.Client, error) {
 	return c.client, err
 }
 
+// ListRemoveFiles returns a list of files under a given prefix
 func (c *MinioClient) ListRemoteFiles(prefix string) ([]*minio.ObjectInfo, error) {
 	var res []*minio.ObjectInfo
 	client, err := c.GetClient()
@@ -62,14 +64,18 @@ func (c *MinioClient) ListRemoteFiles(prefix string) ([]*minio.ObjectInfo, error
 	return res, nil
 }
 
-func isMinioNotExistsError(err error) bool {
+// IsMinioNotExistsError returns true if an error indicates that a key
+// doesn't exist in storage
+func IsMinioNotExistsError(err error) bool {
 	if err == nil {
 		return false
 	}
 	return err.Error() == "The specified key does not exist."
 }
 
-func setPublicObjectMetadata(opts *minio.PutObjectOptions) {
+// SetPublicObjectMetadata sets options that mark object as public
+// for doing put operation
+func SetPublicObjectMetadata(opts *minio.PutObjectOptions) {
 	if opts.UserMetadata == nil {
 		opts.UserMetadata = map[string]string{}
 	}
@@ -112,7 +118,7 @@ func (c *MinioClient) UploadReader(remotePath string, r io.Reader, size int64, p
 		ContentType: contentType,
 	}
 	if public {
-		setPublicObjectMetadata(&opts)
+		SetPublicObjectMetadata(&opts)
 	}
 	opts.ContentType = contentType
 	_, err = client.PutObject(c.Bucket, remotePath, r, size, opts)
