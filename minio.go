@@ -11,6 +11,7 @@ import (
 	"github.com/minio/minio-go"
 )
 
+// MinioClient represents s3/spaces etc. client
 type MinioClient struct {
 	StorageKey    string
 	StorageSecret string
@@ -19,6 +20,7 @@ type MinioClient struct {
 	client        *minio.Client
 }
 
+// EnsureCondfigured will panic if client not configured
 func (c *MinioClient) EnsureConfigured() {
 	PanicIf(c.StorageKey == "")
 	PanicIf(c.StorageSecret == "")
