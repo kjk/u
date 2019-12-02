@@ -22,10 +22,10 @@ type MinioClient struct {
 
 // EnsureCondfigured will panic if client not configured
 func (c *MinioClient) EnsureConfigured() {
-	PanicIf(c.StorageKey == "")
-	PanicIf(c.StorageSecret == "")
-	PanicIf(c.Bucket == "")
-	PanicIf(c.Endpoint == "")
+	PanicIf(c.StorageKey == "", "minio storage key not set")
+	PanicIf(c.StorageSecret == "", "minio storage secret not set")
+	PanicIf(c.Bucket == "", "minio bucket not set")
+	PanicIf(c.Endpoint == "", "minio endpoint not set")
 }
 
 // URLBase returns base of url under which files are accesible
