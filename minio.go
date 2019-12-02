@@ -226,3 +226,15 @@ func (c *MinioClient) StatObject(remotePath string) (minio.ObjectInfo, error) {
 	var opts minio.StatObjectOptions
 	return client.StatObject(c.Bucket, remotePath, opts)
 }
+
+func (c *MinioClient) Delete(remotePath string) error {
+	client, err := c.GetClient()
+	if err != nil {
+		return err
+	}
+	err = client.RemoveObject(c.Bucket, remotePath)
+	if IsMinioNotExistsError(err) {
+		return nil
+	}
+	return nil
+}
