@@ -4,9 +4,16 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
+
+// FmtCmdShort formats exec.Cmd in a short way
+func FmtCmdShort(cmd exec.Cmd) string {
+	cmd.Path = filepath.Base(cmd.Path)
+	return cmd.String()
+}
 
 // RunCmdLoggedMust runs a command and returns its stdout
 // Shows output as it happens
@@ -18,7 +25,7 @@ func RunCmdLoggedMust(cmd *exec.Cmd) string {
 
 // RunCmdMust runs a command and returns its stdout
 func RunCmdMust(cmd *exec.Cmd) string {
-	fmt.Printf("> %s\n", cmd)
+	fmt.Printf("> %s\n", FmtCmdShort(*cmd))
 	canCapture := (cmd.Stdout == nil) && (cmd.Stderr == nil)
 	if canCapture {
 		out, err := cmd.CombinedOutput()
@@ -53,7 +60,7 @@ func OpenCodeDiffMust(path1, path2 string) {
 		path2 = strings.Replace(path2, ".\\", "./", -1)
 	}
 	cmd := exec.Command("code", "--new-window", "--diff", path1, path2)
-	fmt.Printf("> %s\n", cmd)
+	fmt.Printf("> %s\n", FmtCmdShort(*cmd))
 	err := cmd.Start()
 	Must(err)
 }
