@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/kjk/atomicfile"
-	"github.com/kjk/minio-go/v6"
+	"github.com/minio/minio-go/v6"
 )
 
 // MinioClient represents s3/spaces etc. client
