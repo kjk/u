@@ -17,6 +17,7 @@ type MinioClient struct {
 	StorageSecret string
 	Bucket        string
 	Endpoint      string // e.g. "nyc3.digitaloceanspaces.com"
+	Secure        bool
 	client        *minio.Client
 }
 
@@ -41,8 +42,7 @@ func (c *MinioClient) GetClient() (*minio.Client, error) {
 	}
 
 	var err error
-	ssl := true
-	c.client, err = minio.New(c.Endpoint, c.StorageKey, c.StorageSecret, ssl)
+	c.client, err = minio.New(c.Endpoint, c.StorageKey, c.StorageSecret, c.Secure)
 	return c.client, err
 }
 
