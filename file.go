@@ -24,7 +24,7 @@ func PathExists(path string) bool {
 // FileExists returns true if a given path exists and is a file
 func FileExists(path string) bool {
 	st, err := os.Stat(path)
-	return err == nil && st.Mode().IsRegular()
+	return err == nil && !st.IsDir() && st.Mode().IsRegular()
 }
 
 // DirExists returns true if a given path exists and is a directory
@@ -53,21 +53,14 @@ func GetFileSize(path string) (int64, error) {
 	return fi.Size(), nil
 }
 
-// CreateDirIfNotExists creates a directory if it doesn't exist
-func CreateDirIfNotExists(dir string) error {
+// CreateDir creates a directory if it doesn't exist
+func CreateDir(dir string) error {
 	return os.MkdirAll(dir, 0755)
-}
-
-// CreateDirIfNotExistsMust creates a directory. Panics on error
-func CreateDirIfNotExistsMust(dir string) string {
-	err := os.MkdirAll(dir, 0755)
-	Must(err)
-	return dir
 }
 
 // CreateDirMust creates a directory. Panics on error
 func CreateDirMust(path string) string {
-	err := CreateDirIfNotExists(path)
+	err := CreateDir(path)
 	Must(err)
 	return path
 }
@@ -75,39 +68,40 @@ func CreateDirMust(path string) string {
 // CreateDirForFile creates intermediary directories for a file
 func CreateDirForFile(path string) error {
 	dir := filepath.Dir(path)
-	return CreateDirIfNotExists(dir)
+	return CreateDir(dir)
 }
 
 // CreateDirForFileMust is like CreateDirForFile. Panics on error.
 func CreateDirForFileMust(path string) string {
 	dir := filepath.Dir(path)
-	err := CreateDirIfNotExists(dir)
-	Must(err)
+	CreateDirMust(dir)
 	return dir
 }
 
 // WriteFileCreateDirMust is like ioutil.WriteFile() but also creates
 // intermediary directories
 func WriteFileCreateDirMust(d []byte, path string) error {
-	if err := CreateDirIfNotExists(filepath.Dir(path)); err != nil {
+	if err := CreateDir(filepath.Dir(path)); err != nil {
 		return err
 	}
 	return ioutil.WriteFile(path, d, 0644)
 }
 
+// WriteFileMust writes data to a file
 func WriteFileMust(path string, data []byte) {
 	err := ioutil.WriteFile(path, data, 0644)
 	Must(err)
 }
 
+// ReadFileMust reads data from a file
 func ReadFileMust(path string) []byte {
 	d, err := ioutil.ReadFile(path)
 	Must(err)
 	return d
 }
 
-// like io.Closer Close() but ignores an error so better to use as
-// defer CloseNoError(f)
+// CloseNoError is like io.Closer Close() but ignores an error
+// use as: defer CloseNoError(f)
 func CloseNoError(f io.Closer) {
 	_ = f.Close()
 }
@@ -135,6 +129,8 @@ func ListFilesInDir(dir string, recursive bool) []string {
 	return files
 }
 
+// RemoveFilesInDirMust removes all files in a directory
+// (but not sub-directories)
 func RemoveFilesInDirMust(dir string) {
 	if !DirExists(dir) {
 		return
@@ -151,6 +147,7 @@ func RemoveFilesInDirMust(dir string) {
 	}
 }
 
+// RemoveFileLogged removes a file and logs the action
 func RemoveFileLogged(path string) {
 	err := os.Remove(path)
 	if err == nil {
@@ -164,7 +161,7 @@ func RemoveFileLogged(path string) {
 	Logf("os.Remove('%s') failed with '%s'\n", path, err)
 }
 
-// CopyFile copies a file
+// CopyFile copies a file from src to dst
 func CopyFile(dst, src string) error {
 	fsrc, err := os.Open(src)
 	if err != nil {
@@ -182,6 +179,7 @@ func CopyFile(dst, src string) error {
 	return nil
 }
 
+// CopyFileMust copies a file from src to dst
 func CopyFileMust(dst, src string) {
 	Must(CopyFile(dst, src))
 }
@@ -273,7 +271,7 @@ func DeleteFilesIf(dir string, shouldDelete func(os.FileInfo) bool) error {
 	return nil
 }
 
-// absolute path of the current directory
+// CurrDirAbsMust returns absolute path of the current directory
 func CurrDirAbsMust() string {
 	dir, err := filepath.Abs(".")
 	Must(err)
@@ -329,7 +327,7 @@ func FilesSameSize(path1, path2 string) bool {
 }
 
 func DirCopyRecur(dstDir, srcDir string, shouldCopyFn func(path string) bool) ([]string, error) {
-	err := CreateDirIfNotExists(dstDir)
+	err := CreateDir(dstDir)
 	if err != nil {
 		return nil, err
 	}
